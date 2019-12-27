@@ -71,7 +71,7 @@ class Game
 
   def play
     while turn <= max_turns
-      puts "Round #{turn} of #{max_turns}"
+      puts display_hangman
       puts
       puts display_answer
       puts
@@ -95,7 +95,8 @@ class Game
       end
     end
     if !won?
-      puts 
+      puts display_hangman
+      puts
       puts "You lost."
       puts "The answer was: #{answer}"
       puts
