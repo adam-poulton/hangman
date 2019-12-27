@@ -14,7 +14,7 @@ class Game
 
   def guess(input)
     guesses << input.downcase unless guesses.include?(input.downcase)
-    return 1 if !guesses.include?(input.downcase) && !answer.split("").include?(input.downcase)
+    return 1 unless (guesses.include?(input.downcase)) && (answer.split("").include?(input.downcase))
     return 0 
   end
 
@@ -23,7 +23,7 @@ class Game
   end
 
   def display_hangman
-    HANGMAN_ASCII[max_turns-turn]
+    HANGMAN_ASCII[self.max_turns-self.turn+1]
   end
 
   def get_input
@@ -71,7 +71,7 @@ class Game
   end
 
   def play
-    while turn <= max_turns
+    while self.turn <= self.max_turns
       puts display_hangman
       puts
       puts display_answer
