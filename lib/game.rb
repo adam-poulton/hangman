@@ -13,10 +13,16 @@ class Game
 
   def guess(input)
     guesses << input.downcase unless guesses.include?(input.downcase)
+    return 1 if !guesses.include?(input.downcase) && !answer.split("").include?(input.downcase)
+    return 0 
   end
 
   def display_answer
     answer.split("").map{ |char| guesses.include?(char) ? char : "_" }.join(" ")
+  end
+
+  def display_hangman
+    HANGMAN_ASCII[max_turns-turn]
   end
 
   def get_input
@@ -76,7 +82,7 @@ class Game
         save
         return
       else
-        guess(selection)
+        self.turn += guess(selection)
       end
       if won?
         puts
@@ -87,7 +93,6 @@ class Game
         puts "***********"
         return
       end
-      self.turn += 1
     end
     if !won?
       puts 
@@ -138,6 +143,6 @@ class Game
 
   def random_answer(file = "5desk.txt")
     words = File.open(file){ |data| data.readlines(chomp: true) }
-    words.filter{ |word| word.length >= 5 && word.length <= 12 }.sample.downcase
+    words.select{ |word| word.length >= 5 && word.length <= 12 }.sample.downcase
   end
 end
