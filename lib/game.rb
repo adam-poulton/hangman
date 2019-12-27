@@ -1,4 +1,5 @@
 require 'yaml'
+require_relative 'hangman_ascii.rb'
 
 class Game
   attr_reader :answer, :guesses, :max_turns
