@@ -1,48 +1,29 @@
 require_relative 'game.rb'
 require 'time'
 
-def save(game)
-  Dir.mkdir("saves") unless Dir.exists?("saves")
-  savename = "#{Time.new.strftime("%Y-%m-%d_%H-%M-%S")}.yaml"
-  filename = "saves/#{savename}"
-  puts "Saving game...#{savename}"
-  File.open(filename, 'w') do |file|
-    file.print game.to_yaml
-  end
-  puts "Game saved"
-end
 
-def load
-  saves = Dir.children("saves") if Dir.exists?("saves")
-  if saves
-    save = get_save_input(saves)
-    puts "Loading save...#{saves[save]}"
-    game = Game.from_yaml(File.read(saves[save]))
-  else
-    puts "No saves available...Creating new game"
-    game = Game.new
-  end
-  game
-end
-
-def get_save_input(saves)
-  puts "# Available saves #"
-  saves.each_with_index do |file, index|
-    puts "#{index}. #{file}"
-  end
+puts "Welcome to hangman!"
+puts
+while true
+  puts "Select game mode: "
+  puts "(N)ew game"
+  puts "(L)oad game"
   valid = false
   while !valid
-    puts "Enter save number: "
-    input = gets.chomp.to_i
-    reg = /^[0-9]/ =~ input
-    valid = !reg.nil? && input >= 0 && input < saves.length
-    if !valid
-      puts "ERROR: Invalid save number!"
+    input = gets.chomp.downcase
+    case input
+    when "n"
+      game = Game.new
+      valid = true
+    when "l"
+      game = Game.load
+      valid = true
+    else
+      puts "Invalid selection"
     end
   end
-  input
+
+  game.play
+  puts "Play again? Y/n?"
+  return unless gets.chomp.downcase == 'y'
 end
-
-g = Game.new
-g.play
-

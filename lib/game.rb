@@ -4,7 +4,7 @@ class Game
   attr_reader :answer, :guesses, :max_turns
   attr_accessor :turn
 
-  def initialize(answer = random_answer, guesses = [], turn = 0, max_turns = 12)
+  def initialize(answer = random_answer, guesses = [], turn = 1, max_turns = 12)
     @answer = answer
     @guesses = guesses
     @turn = turn.to_i
@@ -22,9 +22,12 @@ class Game
   def get_input
     valid = false
     while !valid
-      puts "Enter a guess: "
+      puts "Enter a guess or 'save'"
       input = gets.chomp.downcase
       reg = /^[a-z]{1}$/ =~ input
+      if input == 'save'
+        return input
+      end
       if reg.nil?
         puts "ERROR: Invalid input!"
       elsif guesses.include?(input)
@@ -36,17 +39,85 @@ class Game
     input
   end
 
+  def save
+    Dir.mkdir("saves") unless Dir.exists?("saves")
+    savename = "#{Time.new.strftime("%Y-%m-%d_%H-%M-%S")}.yaml"
+    filename = "saves/#{savename}"
+    puts "Saving game...#{savename}"
+    File.open(filename, 'w') do |file|
+      file.print self.to_yaml
+    end
+    puts "Game saved"
+  end
+
+  def self.load
+    saves = Dir.children("saves").sort.reverse if Dir.exists?("saves")
+    if saves
+      save = self.get_save_selection(saves)
+      puts "Loading save..."
+      game = self.from_yaml(File.read("saves/#{saves[save.to_i]}"))
+    else
+      puts "No saves available...Creating new game"
+      game = self.new
+    end
+    game
+  end
+
   def play
-    puts "Welcome to hangman"
-    while turn < max_turns
-      self.turn += 1
+    while turn <= max_turns
       puts "Round #{turn} of #{max_turns}"
       puts
       puts display_answer
       puts
       puts "Guesses: #{guesses.join(", ")}"
-      guess(get_input)
+      selection = get_input
+      case selection
+      when 'save'
+        save
+        return
+      else
+        guess(selection)
+      end
+      if won?
+        puts
+        puts display_answer
+        puts "***********"
+        puts "WINNER!!!"
+        puts "You correctly guessed: #{answer}"
+        puts "***********"
+        return
+      end
+      self.turn += 1
     end
+    if !won?
+      puts 
+      puts "You lost."
+      puts "The answer was: #{answer}"
+      puts
+    end
+  end
+
+  def won?
+    !display_answer.include?("_")
+  end
+
+  def self.get_save_selection(saves)
+    puts "# Available saves #"
+    saves.each_with_index do |file, index|
+      puts "#{index}. #{file}"
+    end
+    valid = false
+    while !valid
+      puts "Enter save number: "
+      input = gets.chomp
+      reg = /^[0-9]/ =~ input
+      input = input.to_i
+      valid = !reg.nil? && input >= 0 && input < saves.length
+      if !valid
+        puts "ERROR: Invalid save number!"
+      end
+    end
+    input
   end
 
   def to_yaml
